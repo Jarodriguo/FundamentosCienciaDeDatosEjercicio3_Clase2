@@ -136,9 +136,13 @@ def extraer_datos_llm(parrafo: str, api_key: str, modelo: str) -> pd.DataFrame:
     registros = data.get("records", data if isinstance(data, list) else [])
     df = pd.DataFrame(registros)
 
-    # Intentar convertir columnas numéricas escritas como texto
+    # Convertir a numérico solo las columnas que lo son de verdad.
+    # (errors="ignore" fue eliminado en pandas 3, así que lo hacemos a mano.)
     for col in df.columns:
-        df[col] = pd.to_numeric(df[col], errors="ignore")
+        convertida = pd.to_numeric(df[col], errors="coerce")
+        # Si todos los valores no nulos se convirtieron sin perderse, es numérica.
+        if convertida.notna().sum() == df[col].notna().sum():
+            df[col] = convertida
     return df
 
 
