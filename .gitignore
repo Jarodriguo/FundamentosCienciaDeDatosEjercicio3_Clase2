@@ -1,0 +1,8 @@
+# Claves privadas de Streamlit (no subir a GitHub)
+.streamlit/secrets.toml
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
