@@ -1,15 +1,12 @@
 {
   "_nombre": "Español",
-
   "titulo_pestana": "Texto → Tabla → EDA",
   "idioma_etiqueta": "Idioma",
-
   "config_titulo": "Configuración",
   "api_key_cargada": "API Key cargada desde secrets",
   "api_key_etiqueta": "Groq API Key",
   "api_key_ayuda": "Tu clave se usa solo en esta sesión.",
   "api_key_nota": "Consigue una clave gratis en console.groq.com",
-
   "modelo_etiqueta": "Modelo (Groq)",
   "modelo_ayuda": "Groq retira modelos periódicamente. Si uno deja de responder, elige otro o escribe un ID vigente.",
   "modelo_recomendado": "recomendado",
@@ -18,16 +15,13 @@
   "modelo_otro": "Otro (escribir ID)",
   "modelo_id_etiqueta": "ID del modelo",
   "modelo_id_ayuda": "Consulta los IDs vigentes en console.groq.com/docs/models",
-
   "flujo": "**Flujo:** párrafo → LLM → tabla → EDA en seaborn.",
-
   "titulo": "De Texto a Tabla + EDA",
   "intro": "Pega un párrafo con cifras. El LLM extrae los datos, los estructura en una tabla y se genera un análisis exploratorio con gráficos en **seaborn**.",
   "ejemplo": "En 2023 la sucursal Norte vendió 1.250 unidades con ingresos de 45.000 USD y 12 empleados. La sucursal Sur vendió 980 unidades, generó 38.500 USD y tiene 9 empleados. La sucursal Este alcanzó 1.540 unidades, 52.300 USD y 15 empleados, mientras que la sucursal Oeste registró 760 unidades, 29.800 USD y 7 empleados.",
   "parrafo_etiqueta": "Párrafo de entrada",
   "boton_extraer": "Extraer y analizar",
   "extrayendo": "Extrayendo datos con el LLM...",
-
   "error_sin_api_key": "Ingresa tu Groq API Key en la barra lateral.",
   "error_sin_texto": "Escribe o pega un párrafo con cifras.",
   "error_sin_modelo": "Escribe el ID de un modelo en la barra lateral.",
@@ -37,16 +31,13 @@
   "error_truncado": "La respuesta del modelo se cortó por longitud. Prueba con un texto más corto o con otro modelo.",
   "error_modelo_retirado": "El modelo «{modelo}» ya no está disponible en Groq. Elige otro en la barra lateral.",
   "aviso_sin_datos": "El LLM no encontró datos tabulables en el texto.",
-
   "idioma_columnas_llm": "español",
-
   "tabla_titulo": "Tabla extraída",
   "metrica_filas": "Filas",
   "metrica_columnas": "Columnas",
   "metrica_numericas": "Variables numéricas",
   "descargar_csv": "Descargar CSV",
   "nombre_csv": "datos_extraidos.csv",
-
   "eda_titulo": "Análisis exploratorio (EDA)",
   "resumen_estadistico": "Resumen estadístico",
   "est_count": "conteo",
@@ -54,7 +45,6 @@
   "est_std": "desv. estándar",
   "est_min": "mínimo",
   "est_max": "máximo",
-
   "sel_categoria_barras": "Categoría (barras)",
   "sel_valor_barras": "Valor (barras)",
   "sel_distribucion": "Variable (distribución)",
@@ -62,12 +52,18 @@
   "eje_x": "Eje X",
   "eje_y": "Eje Y",
   "info_dos_numericas": "Se necesitan al menos 2 variables numéricas para correlación y dispersión.",
-
   "graf_barras": "{num} por {cat}",
   "graf_distribucion": "Distribución de {col}",
   "graf_boxplot": "Boxplot de variables numéricas",
   "graf_correlacion": "Matriz de correlación",
   "graf_dispersion": "{y} vs {x}",
   "graf_valor": "valor",
-  "graf_frecuencia": "Frecuencia"
+  "graf_frecuencia": "Frecuencia",
+  "demo_lista": "Demo lista para usar — no necesitas API Key.",
+  "api_key_propia": "Usar mi propia API Key",
+  "api_key_propia_ayuda": "Opcional. Si la pones, se usará la tuya en lugar de la del autor.",
+  "api_key_falta": "No hay clave configurada. Añade GROQ_API_KEY en `.streamlit/secrets.toml` (local) o en Settings → Secrets (Streamlit Cloud).",
+  "limite_caracteres": "El texto tiene {actual} caracteres y el máximo de la demo es {maximo}. Acórtalo o usa tu propia API Key.",
+  "limite_extracciones": "Alcanzaste el límite de {maximo} extracciones de esta demo. Recarga la página o usa tu propia API Key.",
+  "extracciones_restantes": "Extracciones restantes en la demo: {n}"
 }

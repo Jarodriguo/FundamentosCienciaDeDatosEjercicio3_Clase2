@@ -34,7 +34,7 @@ except ImportError:
 idioma_actual()  # inicializa el idioma antes de traducir el título de la pestaña
 st.set_page_config(
     page_title=t("titulo_pestana"),
-    page_icon="📊",
+    page_icon="",
     layout="wide",
 )
 
@@ -77,19 +77,6 @@ st.markdown(
 )
 
 
-# --------------------------------------------------------------------------- #
-# Modelos disponibles en Groq (revisado en septiembre de 2026)
-# --------------------------------------------------------------------------- #
-# Los Llama 3.x y Qwen3-32B que usaba la versión anterior fueron retirados del
-# plan gratuito en julio/agosto de 2026. Si alguno de estos deja de funcionar,
-# revisa https://console.groq.com/docs/deprecations y actualiza este diccionario
-# (o usa la opción "Otro" de la barra lateral, que no requiere tocar código).
-#
-# "extra" son parámetros propios de cada familia de modelos:
-#   - GPT-OSS razona antes de responder; con esfuerzo "low" basta para extraer
-#     datos, y include_reasoning=False evita recibir el razonamiento.
-#   - Qwen 3.6 permite desactivar el razonamiento con "none"; el 3.8 admite
-#     además "low", "medium" y "high".
 MODELOS = {
     "openai/gpt-oss-120b": {
         "etiqueta": "modelo_recomendado",
@@ -105,11 +92,19 @@ MODELOS = {
     },
     "qwen/qwen3.8-27b": {
         "etiqueta": "modelo_preview",
-        # Qwen 3.8 admite más niveles que el 3.6 ("none", "low", "medium", "high").
         "extra": {"reasoning_effort": "low"},
     },
 }
 OPCION_OTRO = "__otro__"
+
+# --------------------------------------------------------------------------- #
+# Límites del modo demo
+# --------------------------------------------------------------------------- #
+# La app se publica con la clave del autor, así que cualquier visitante consume
+# su cuota de Groq. Estos límites mantienen el gasto acotado sin estorbar a
+# quien solo quiere probar la demo. No se aplican si el visitante trae su clave.
+LIMITE_CARACTERES = 1500
+LIMITE_EXTRACCIONES = 10
 
 
 # --------------------------------------------------------------------------- #
@@ -159,7 +154,6 @@ def extraer_datos_llm(parrafo: str, api_key: str, modelo: str) -> pd.DataFrame:
         respuesta = client.chat.completions.create(
             model=modelo,
             # Margen amplio: en los modelos de razonamiento este límite
-            # incluye también los tokens que el modelo usa para "pensar".
             max_completion_tokens=4096,
             temperature=0,
             # Modo JSON: obliga al modelo a devolver un objeto JSON válido.
@@ -170,7 +164,7 @@ def extraer_datos_llm(parrafo: str, api_key: str, modelo: str) -> pd.DataFrame:
             ],
             **extra,
         )
-    except Exception as err:  # noqa: BLE001
+    except Exception as err:
         mensaje = str(err).lower()
         if "decommissioned" in mensaje or "model_not_found" in mensaje:
             raise RuntimeError(t("error_modelo_retirado", modelo=modelo)) from err
@@ -192,13 +186,34 @@ def extraer_datos_llm(parrafo: str, api_key: str, modelo: str) -> pd.DataFrame:
     df = pd.DataFrame(registros)
 
     # Convertir a numérico solo las columnas que lo son de verdad.
-    # (errors="ignore" fue eliminado en pandas 3, así que lo hacemos a mano.)
     for col in df.columns:
         convertida = pd.to_numeric(df[col], errors="coerce")
         # Si todos los valores no nulos se convirtieron sin perderse, es numérica.
         if convertida.notna().sum() == df[col].notna().sum():
             df[col] = convertida
     return df
+
+
+def clave_del_autor() -> str:
+    """Clave publicada en secrets. Cadena vacía si no hay ninguna configurada."""
+    try:
+        return st.secrets.get("GROQ_API_KEY", "") or ""
+    except Exception:
+        return ""
+
+
+@st.cache_data(show_spinner=False, ttl=3600, max_entries=200)
+def extraer_datos_cacheado(parrafo: str, modelo: str, idioma: str,
+                           _api_key: str) -> pd.DataFrame:
+    """Igual que extraer_datos_llm, pero cacheado durante una hora.
+
+    Si dos visitantes pegan el mismo texto, el segundo no gasta cuota.
+    - `idioma` es argumento porque el prompt cambia con él (si no, el caché
+      devolvería columnas en el idioma equivocado).
+    - `_api_key` empieza con guion bajo para que Streamlit NO lo use como parte
+      de la clave del caché y la clave no quede registrada en él.
+    """
+    return extraer_datos_llm(parrafo, _api_key, modelo)
 
 
 # --------------------------------------------------------------------------- #
@@ -254,9 +269,7 @@ def graficar_boxplot(df, cols_num):
 def graficar_correlacion(df, cols_num):
     fig, ax = plt.subplots(figsize=(6.5, 5))
     corr = df[cols_num].corr()
-    sns.heatmap(corr, annot=True, fmt=".2f", cmap="crest",
-                linewidths=0.5, linecolor="white", square=True,
-                cbar_kws={"shrink": 0.8}, ax=ax)
+    sns.heatmap(corr, annot=True, fmt=".2f", cmap="crest", linewidths=0.5, linecolor="white", square=True, cbar_kws={"shrink": 0.8}, ax=ax)
     ax.set_title(t("graf_correlacion"))
     fig.tight_layout()
     return fig
@@ -264,8 +277,7 @@ def graficar_correlacion(df, cols_num):
 
 def graficar_dispersion(df, x, y):
     fig, ax = plt.subplots(figsize=(8, 4.5))
-    sns.scatterplot(data=df, x=x, y=y, s=120, color=COLOR_ACENTO,
-                    edgecolor=COLOR_PRINCIPAL, linewidth=1.5, ax=ax)
+    sns.scatterplot(data=df, x=x, y=y, s=120, color=COLOR_ACENTO, edgecolor=COLOR_PRINCIPAL, linewidth=1.5, ax=ax)
     ax.set_title(t("graf_dispersion", x=x, y=y))
     sns.despine()
     fig.tight_layout()
@@ -291,19 +303,24 @@ with st.sidebar:
 
     st.header(t("config_titulo"))
 
-    # En despliegue (Streamlit Cloud) la clave se lee de st.secrets;
-    # en local o como respaldo, se puede pegar manualmente.
-    try:
-        api_key_secreta = st.secrets.get("GROQ_API_KEY", "")
-    except Exception:  # noqa: BLE001  (no existe secrets.toml)
-        api_key_secreta = ""
-    if api_key_secreta:
-        api_key = api_key_secreta
-        st.success(t("api_key_cargada"))
-    else:
-        # key fija: la clave escrita no se pierde al cambiar de idioma.
-        api_key = st.text_input(t("api_key_etiqueta"), type="password",
-                                help=t("api_key_ayuda"), key="api_key")
+    # La clave del autor se publica en secrets y nunca aparece en pantalla.
+    # El visitante solo ve el campo si quiere usar la suya (o si no hay ninguna
+    # configurada, algo que solo pasa en local antes de crear secrets.toml).
+    api_key_autor = clave_del_autor()
+    if api_key_autor:
+        st.caption(t("demo_lista"))
+
+    with st.expander(t("api_key_propia"), expanded=not api_key_autor):
+        api_key_visitante = st.text_input(
+            t("api_key_etiqueta"), type="password",
+            help=t("api_key_propia_ayuda"), key="api_key",
+        ).strip()
+
+    # La del visitante tiene prioridad; si no hay ninguna, se avisa.
+    api_key = api_key_visitante or api_key_autor
+    usa_clave_propia = bool(api_key_visitante)
+    if not api_key:
+        st.warning(t("api_key_falta"))
 
     # Se guardan IDs de modelo; el texto visible se traduce con format_func.
     # Las etiquetas se precalculan en un dict (más eficiente y predecible
@@ -323,7 +340,10 @@ with st.sidebar:
     else:
         modelo = eleccion
 
-    st.caption(t("api_key_nota"))
+    if api_key_autor and not usa_clave_propia:
+        restantes = LIMITE_EXTRACCIONES - st.session_state.get("extracciones", 0)
+        st.caption(t("extracciones_restantes", n=max(restantes, 0)))
+
     st.divider()
     st.markdown(t("flujo"))
 
@@ -335,7 +355,7 @@ st.title(t("titulo"))
 st.markdown(t("intro"))
 
 # El párrafo vive en session_state (key="parrafo") para que no se borre
-# al cambiar de idioma; el valor inicial es el ejemplo del idioma activo.
+# Al cambiar de idioma; el valor inicial es el ejemplo del idioma activo.
 if "parrafo" not in st.session_state:
     st.session_state["parrafo"] = t("ejemplo")
 parrafo = st.text_area(t("parrafo_etiqueta"), height=160, key="parrafo")
@@ -351,18 +371,34 @@ if st.button(t("boton_extraer")):
         st.error(t("error_sin_texto"))
         st.stop()
 
+    # Límites del modo demo: solo para quien usa la clave del autor.
+    usadas = st.session_state.get("extracciones", 0)
+    if not usa_clave_propia:
+        if len(parrafo) > LIMITE_CARACTERES:
+            st.error(t("limite_caracteres", actual=len(parrafo),
+                       maximo=LIMITE_CARACTERES))
+            st.stop()
+        if usadas >= LIMITE_EXTRACCIONES:
+            st.error(t("limite_extracciones", maximo=LIMITE_EXTRACCIONES))
+            st.stop()
+
     with st.spinner(t("extrayendo")):
         try:
-            df = extraer_datos_llm(parrafo, api_key, modelo)
+            df = extraer_datos_cacheado(parrafo, modelo, idioma_actual(), api_key)
         except Exception as err:  # noqa: BLE001
             st.error(t("error_generico", error=err))
             st.stop()
+
+    if not usa_clave_propia:
+        st.session_state["extracciones"] = usadas + 1
 
     if df.empty:
         st.warning(t("aviso_sin_datos"))
         st.stop()
 
     st.session_state["df"] = df  # guardamos para no re-llamar al LLM
+
+    st.rerun()
 
 # Si ya hay datos en sesión, mostramos tabla + EDA
 if "df" in st.session_state:
