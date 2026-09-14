@@ -88,7 +88,8 @@ st.markdown(
 # "extra" son parámetros propios de cada familia de modelos:
 #   - GPT-OSS razona antes de responder; con esfuerzo "low" basta para extraer
 #     datos, y include_reasoning=False evita recibir el razonamiento.
-#   - Qwen 3.6 permite desactivar el razonamiento con "none".
+#   - Qwen 3.6 permite desactivar el razonamiento con "none"; el 3.8 admite
+#     además "low", "medium" y "high".
 MODELOS = {
     "openai/gpt-oss-120b": {
         "etiqueta": "modelo_recomendado",
@@ -101,6 +102,11 @@ MODELOS = {
     "qwen/qwen3.6-27b": {
         "etiqueta": "modelo_preview",
         "extra": {"reasoning_effort": "none"},
+    },
+    "qwen/qwen3.8-27b": {
+        "etiqueta": "modelo_preview",
+        # Qwen 3.8 admite más niveles que el 3.6 ("none", "low", "medium", "high").
+        "extra": {"reasoning_effort": "low"},
     },
 }
 OPCION_OTRO = "__otro__"

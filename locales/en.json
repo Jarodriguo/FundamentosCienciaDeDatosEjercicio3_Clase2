@@ -1,0 +1,73 @@
+{
+  "_nombre": "English",
+
+  "titulo_pestana": "Text → Table → EDA",
+  "idioma_etiqueta": "Language",
+
+  "config_titulo": "Settings",
+  "api_key_cargada": "API Key loaded from secrets",
+  "api_key_etiqueta": "Groq API Key",
+  "api_key_ayuda": "Your key is only used during this session.",
+  "api_key_nota": "Get a free key at console.groq.com",
+
+  "modelo_etiqueta": "Model (Groq)",
+  "modelo_ayuda": "Groq retires models periodically. If one stops responding, pick another or type a current model ID.",
+  "modelo_recomendado": "recommended",
+  "modelo_rapido": "fastest",
+  "modelo_preview": "preview",
+  "modelo_otro": "Other (type ID)",
+  "modelo_id_etiqueta": "Model ID",
+  "modelo_id_ayuda": "See current IDs at console.groq.com/docs/models",
+
+  "flujo": "**Flow:** paragraph → LLM → table → EDA with seaborn.",
+
+  "titulo": "From Text to Table + EDA",
+  "intro": "Paste a paragraph containing figures. The LLM extracts the data, structures it into a table, and an exploratory analysis is generated with **seaborn** charts.",
+  "ejemplo": "In 2023 the North branch sold 1,250 units with revenue of 45,000 USD and 12 employees. The South branch sold 980 units, generated 38,500 USD and has 9 employees. The East branch reached 1,540 units, 52,300 USD and 15 employees, while the West branch recorded 760 units, 29,800 USD and 7 employees.",
+  "parrafo_etiqueta": "Input paragraph",
+  "boton_extraer": "Extract and analyze",
+  "extrayendo": "Extracting data with the LLM...",
+
+  "error_sin_api_key": "Enter your Groq API Key in the sidebar.",
+  "error_sin_texto": "Type or paste a paragraph containing figures.",
+  "error_sin_modelo": "Type a model ID in the sidebar.",
+  "error_generico": "Error: {error}",
+  "error_sin_groq": "The 'groq' package is not installed.",
+  "error_json": "The LLM did not return valid JSON.\n\nResponse:\n{respuesta}",
+  "error_truncado": "The model's response was cut off for length. Try a shorter text or a different model.",
+  "error_modelo_retirado": "The model “{modelo}” is no longer available on Groq. Pick another one in the sidebar.",
+  "aviso_sin_datos": "The LLM found no tabular data in the text.",
+
+  "idioma_columnas_llm": "English",
+
+  "tabla_titulo": "Extracted table",
+  "metrica_filas": "Rows",
+  "metrica_columnas": "Columns",
+  "metrica_numericas": "Numeric variables",
+  "descargar_csv": "Download CSV",
+  "nombre_csv": "extracted_data.csv",
+
+  "eda_titulo": "Exploratory data analysis (EDA)",
+  "resumen_estadistico": "Summary statistics",
+  "est_count": "count",
+  "est_mean": "mean",
+  "est_std": "std. dev.",
+  "est_min": "min",
+  "est_max": "max",
+
+  "sel_categoria_barras": "Category (bars)",
+  "sel_valor_barras": "Value (bars)",
+  "sel_distribucion": "Variable (distribution)",
+  "relacion_titulo": "**Relationship between two variables**",
+  "eje_x": "X axis",
+  "eje_y": "Y axis",
+  "info_dos_numericas": "At least 2 numeric variables are needed for correlation and scatter plots.",
+
+  "graf_barras": "{num} by {cat}",
+  "graf_distribucion": "Distribution of {col}",
+  "graf_boxplot": "Boxplot of numeric variables",
+  "graf_correlacion": "Correlation matrix",
+  "graf_dispersion": "{y} vs {x}",
+  "graf_valor": "value",
+  "graf_frecuencia": "Count"
+}
